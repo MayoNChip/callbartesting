@@ -2,10 +2,13 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
+import NavbarLayout from "../components/layout/NavbarLayout";
 
 const Home: NextPage = () => {
   const allTests = trpc.tests.getAll.useQuery();
+  const { data: sessionData } = useSession();
 
+  console.log("session", sessionData);
   return (
     <>
       <Head>
@@ -14,7 +17,12 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div>{allTests && allTests?.data?.map((test) => test.description)}</div>
+      <div>
+        <h1>Homepage</h1>
+        {sessionData?.user && (
+          <h3>Logged in as {sessionData.user.username} </h3>
+        )}
+      </div>
     </>
   );
 };
@@ -22,20 +30,16 @@ const Home: NextPage = () => {
 export default Home;
 
 const AuthShowcase: React.FC = () => {
-  const { data: secretMessage } = trpc.auth.getSecretMessage.useQuery();
-
   const { data: sessionData } = useSession();
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
       {sessionData && (
         <p className="text-2xl text-blue-500">
-          Logged in as {sessionData?.user?.name}
+          Logged in as {sessionData?.user?.username}
         </p>
       )}
-      {secretMessage && (
-        <p className="text-2xl text-blue-500">{secretMessage}</p>
-      )}
+
       <button
         className="rounded-md border border-black bg-violet-50 px-4 py-2 text-xl shadow-lg hover:bg-violet-100"
         onClick={sessionData ? () => signOut() : () => signIn()}
